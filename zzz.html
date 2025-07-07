@@ -1,0 +1,496 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Hero Banner Slider</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        .hero-banner-container {
+            width: 100vw;
+            height: 100vh;
+            position: relative;
+            overflow: hidden;
+            font-family: 'Arial', sans-serif;
+        }
+
+        .hero-slide-wrapper {
+            width: 300%;
+            height: 100%;
+            display: flex;
+            animation: heroSlideAnimation 12s infinite;
+        }
+
+        .hero-slide-item {
+            width: 33.333%;
+            height: 100%;
+            position: relative;
+            background-size: cover;
+            background-position: center;
+            background-repeat: no-repeat;
+        }
+
+        .hero-slide-item:nth-child(1) {
+            background-image: url('https://images.unsplash.com/photo-1557804506-669a67965ba0?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1974&q=80');
+        }
+
+        .hero-slide-item:nth-child(2) {
+            background-image: url('https://images.unsplash.com/photo-1451187580459-43490279c0fa?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=2072&q=80');
+        }
+
+        .hero-slide-item:nth-child(3) {
+            background-image: url('https://images.unsplash.com/photo-1519389950473-47ba0277781c?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=2070&q=80');
+        }
+
+        .hero-overlay-pattern {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: 
+                radial-gradient(circle at 25% 25%, rgba(255,255,255,0.1) 0%, transparent 25%),
+                radial-gradient(circle at 75% 75%, rgba(255,255,255,0.05) 0%, transparent 25%);
+            animation: heroPatternFloat 15s ease-in-out infinite;
+        }
+
+        .hero-slide-item::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.4);
+            z-index: 1;
+        }
+
+        .hero-slide-content {
+            opacity: 0;
+            visibility: hidden;
+            transition: all 0.8s ease-in-out;
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+        }
+
+        .hero-slide-content.active {
+            opacity: 1;
+            visibility: visible;
+        }
+
+        .hero-slide-content.active .hero-main-title {
+            animation: heroTitleSlideIn 1s ease-out;
+        }
+
+        .hero-slide-content.active .hero-description-text {
+            animation: heroDescriptionSlideIn 1s ease-out 0.3s both;
+        }
+
+        .hero-slide-content.active .hero-cta-button {
+            animation: heroCTASlideIn 1s ease-out 0.6s both;
+        }
+
+        .hero-content-container {
+            position: absolute;
+            top: 50%;
+            left: 8%;
+            transform: translateY(-50%);
+            text-align: left;
+            color: white;
+            z-index: 10;
+            width: 45%;
+            max-width: 600px;
+            margin-bottom: 2rem;
+        }
+
+        .hero-main-title {
+            font-size: clamp(2.5rem, 8vw, 5rem);
+            font-weight: 900;
+            margin-bottom: 1rem;
+            background: linear-gradient(45deg, #ffffff, #f0f0f0, #ffffff);
+            background-size: 200% 200%;
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            animation: heroTitleShimmer 3s ease-in-out infinite, heroTitleBounce 2s ease-in-out infinite;
+            text-shadow: 0 0 30px rgba(255,255,255,0.3);
+            letter-spacing: -0.02em;
+        }
+
+        .hero-description-text {
+            font-size: clamp(1rem, 3vw, 1.5rem);
+            font-weight: 300;
+            line-height: 1.6;
+            margin-bottom: 3rem;
+            opacity: 0.95;
+            animation: heroDescriptionFade 4s ease-in-out infinite;
+            max-width: 100%;
+        }
+
+        .hero-cta-button {
+            display: inline-block;
+            padding: 15px 40px;
+            background: rgba(255,255,255,0.2);
+            border: 2px solid rgba(255,255,255,0.3);
+            border-radius: 50px;
+            color: white;
+            text-decoration: none;
+            font-weight: 600;
+            font-size: 1.1rem;
+            transition: all 0.3s ease;
+            backdrop-filter: blur(10px);
+            animation: heroCTAPulse 3s ease-in-out infinite;
+        }
+
+        .hero-cta-button:hover {
+            background: rgba(255,255,255,0.3);
+            border-color: rgba(255,255,255,0.5);
+            transform: translateY(-3px);
+            box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+        }
+
+        .hero-slide-indicators {
+            position: absolute;
+            bottom: 30px;
+            left: 50%;
+            transform: translateX(-50%);
+            display: flex;
+            gap: 15px;
+            z-index: 15;
+        }
+
+        .hero-indicator-dot {
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            background: rgba(255,255,255,0.4);
+            cursor: pointer;
+            transition: all 0.3s ease;
+            animation: heroIndicatorPulse 4s ease-in-out infinite;
+        }
+
+        .hero-indicator-dot.active {
+            background: white;
+            transform: scale(1.2);
+        }
+
+        .hero-floating-shapes {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            overflow: hidden;
+        }
+
+        .hero-shape {
+            position: absolute;
+            background: rgba(255,255,255,0.1);
+            border-radius: 50%;
+            animation: heroShapeFloat 20s linear infinite;
+        }
+
+        .hero-shape:nth-child(1) {
+            width: 80px;
+            height: 80px;
+            top: 20%;
+            left: 10%;
+            animation-delay: 0s;
+        }
+
+        .hero-shape:nth-child(2) {
+            width: 120px;
+            height: 120px;
+            top: 60%;
+            right: 15%;
+            animation-delay: -5s;
+        }
+
+        .hero-shape:nth-child(3) {
+            width: 60px;
+            height: 60px;
+            top: 80%;
+            left: 20%;
+            animation-delay: -10s;
+        }
+
+        .hero-shape:nth-child(4) {
+            width: 100px;
+            height: 100px;
+            top: 30%;
+            right: 25%;
+            animation-delay: -15s;
+        }
+
+        @keyframes heroTitleSlideIn {
+            0% { transform: translateX(-100px); opacity: 0; }
+            100% { transform: translateX(0); opacity: 1; }
+        }
+
+        @keyframes heroDescriptionSlideIn {
+            0% { transform: translateX(-80px); opacity: 0; }
+            100% { transform: translateX(0); opacity: 1; }
+        }
+
+        @keyframes heroCTASlideIn {
+            0% { transform: translateX(-60px); opacity: 0; }
+            100% { transform: translateX(0); opacity: 1; }
+        }
+
+        @keyframes heroSlideAnimation {
+            0%, 30% { transform: translateX(0); }
+            33.333%, 63.333% { transform: translateX(-33.333%); }
+            66.666%, 96.666% { transform: translateX(-66.666%); }
+            100% { transform: translateX(0); }
+        }
+
+        @keyframes heroTitleShimmer {
+            0%, 100% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+        }
+
+        @keyframes heroTitleBounce {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-10px); }
+        }
+
+        @keyframes heroDescriptionFade {
+            0%, 100% { opacity: 0.95; }
+            50% { opacity: 0.7; }
+        }
+
+        @keyframes heroCTAPulse {
+            0%, 100% { box-shadow: 0 0 20px rgba(255,255,255,0.3); }
+            50% { box-shadow: 0 0 40px rgba(255,255,255,0.6); }
+        }
+
+        @keyframes heroIndicatorPulse {
+            0%, 100% { opacity: 0.6; }
+            50% { opacity: 1; }
+        }
+
+        @keyframes heroPatternFloat {
+            0%, 100% { transform: translateY(0) rotate(0deg); }
+            33% { transform: translateY(-20px) rotate(120deg); }
+            66% { transform: translateY(10px) rotate(240deg); }
+        }
+
+        @keyframes heroShapeFloat {
+            0% { transform: translateY(100vh) rotate(0deg); opacity: 0; }
+            10% { opacity: 1; }
+            90% { opacity: 1; }
+            100% { transform: translateY(-100px) rotate(360deg); opacity: 0; }
+        }
+
+        /* Mobile Responsive Design */
+        @media (max-width: 768px) {
+            .hero-banner-container {
+                height: 60vh; /* Rectangular height instead of full screen */
+                min-height: 400px; /* Minimum height for content readability */
+                max-height: 500px; /* Maximum height to keep it rectangular */
+            }
+            
+            .hero-content-container {
+                left: 5%;
+                top: 50%;
+                transform: translateY(-50%);
+                text-align: left;
+                width: 85%;
+                margin-bottom: 1.5rem;
+            }
+            
+            .hero-main-title {
+                margin-bottom: 0.8rem;
+                font-size: clamp(1.5rem, 6vw, 2.5rem);
+            }
+            
+            .hero-description-text {
+                margin-bottom: 2rem;
+                font-size: clamp(0.9rem, 4vw, 1.1rem);
+                line-height: 1.5;
+            }
+            
+            .hero-cta-button {
+                padding: 12px 30px;
+                font-size: 1rem;
+            }
+            
+            .hero-slide-indicators {
+                bottom: 15px;
+                gap: 10px;
+            }
+            
+            .hero-indicator-dot {
+                width: 8px;
+                height: 8px;
+            }
+
+            /* Hide floating shapes on mobile for cleaner look */
+            .hero-floating-shapes {
+                display: none;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .hero-banner-container {
+                height: 50vh;
+                min-height: 350px;
+                max-height: 450px;
+            }
+            
+            .hero-content-container {
+                left: 4%;
+                width: 90%;
+                margin-bottom: 1rem;
+            }
+            
+            .hero-main-title {
+                margin-bottom: 0.6rem;
+                font-size: clamp(1.3rem, 5vw, 2rem);
+            }
+            
+            .hero-description-text {
+                margin-bottom: 1.5rem;
+                font-size: clamp(0.8rem, 3.5vw, 1rem);
+            }
+            
+            .hero-cta-button {
+                padding: 10px 25px;
+                font-size: 0.9rem;
+            }
+            
+            .hero-slide-indicators {
+                bottom: 10px;
+                gap: 8px;
+            }
+            
+            .hero-indicator-dot {
+                width: 6px;
+                height: 6px;
+            }
+        }
+
+        /* Pause animation on hover */
+        .hero-banner-container:hover .hero-slide-wrapper {
+            animation-play-state: paused;
+        }
+    </style>
+</head>
+<body>
+    <div class="hero-banner-container">
+        <div class="hero-slide-wrapper">
+            <div class="hero-slide-item">
+                <div class="hero-overlay-pattern"></div>
+                <div class="hero-floating-shapes">
+                    <div class="hero-shape"></div>
+                    <div class="hero-shape"></div>
+                    <div class="hero-shape"></div>
+                    <div class="hero-shape"></div>
+                </div>
+            </div>
+            <div class="hero-slide-item">
+                <div class="hero-overlay-pattern"></div>
+                <div class="hero-floating-shapes">
+                    <div class="hero-shape"></div>
+                    <div class="hero-shape"></div>
+                    <div class="hero-shape"></div>
+                    <div class="hero-shape"></div>
+                </div>
+            </div>
+            <div class="hero-slide-item">
+                <div class="hero-overlay-pattern"></div>
+                <div class="hero-floating-shapes">
+                    <div class="hero-shape"></div>
+                    <div class="hero-shape"></div>
+                    <div class="hero-shape"></div>
+                    <div class="hero-shape"></div>
+                </div>
+            </div>
+        </div>
+
+        <div class="hero-content-container">
+            <div class="hero-slide-content hero-slide-content-1 active">
+                <h1 class="hero-main-title">Elevate Your Success</h1>
+                <p class="hero-description-text">
+                    Revolutionize your business operations with smart technology solutions. We deliver results that matter, transforming challenges into opportunities for exponential growth.
+                </p>
+                <a href="#" class="hero-cta-button">Get Started</a>
+            </div>
+            
+            <div class="hero-slide-content hero-slide-content-2">
+                <h1 class="hero-main-title">Beyond Tomorrow</h1>
+                <p class="hero-description-text">
+                    Step into the future with next-generation technologies that redefine possibilities. Our advanced solutions bring science fiction to reality.
+                </p>
+                <a href="#" class="hero-cta-button">Explore Tech</a>
+            </div>
+            
+            <div class="hero-slide-content hero-slide-content-3">
+                <h1 class="hero-main-title">Stronger Together</h1>
+                <p class="hero-description-text">
+                    Unite diverse talents to create extraordinary outcomes. Our collaborative approach ensures every voice is heard and every idea has the power to innovate.
+                </p>
+                <a href="#" class="hero-cta-button">Connect Now</a>
+            </div>
+        </div>
+
+        <div class="hero-slide-indicators">
+            <div class="hero-indicator-dot active"></div>
+            <div class="hero-indicator-dot"></div>
+            <div class="hero-indicator-dot"></div>
+        </div>
+    </div>
+
+    <script>
+        // Update active indicator and content based on current slide
+        const indicators = document.querySelectorAll('.hero-indicator-dot');
+        const slideContents = document.querySelectorAll('.hero-slide-content');
+        let currentSlide = 0;
+
+        function updateSlide() {
+            // Update indicators
+            indicators.forEach((indicator, index) => {
+                indicator.classList.toggle('active', index === currentSlide);
+            });
+            
+            // Update content
+            slideContents.forEach((content, index) => {
+                content.classList.toggle('active', index === currentSlide);
+            });
+            
+            currentSlide = (currentSlide + 1) % 3;
+        }
+
+        // Update slide every 4 seconds (matching slide timing)
+        setInterval(updateSlide, 4000);
+
+        // Click functionality for indicators
+        indicators.forEach((indicator, index) => {
+            indicator.addEventListener('click', () => {
+                currentSlide = index;
+                updateSlide();
+                
+                // Temporarily adjust animation to jump to clicked slide
+                const wrapper = document.querySelector('.hero-slide-wrapper');
+                wrapper.style.transform = `translateX(-${index * 33.333}%)`;
+                wrapper.style.transition = 'transform 0.5s ease';
+                
+                setTimeout(() => {
+                    wrapper.style.transition = '';
+                }, 500);
+            });
+        });
+
+        // Initialize first slide content
+        slideContents[0].classList.add('active');
+    </script>
+</body>
+</html>
